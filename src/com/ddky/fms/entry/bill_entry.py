@@ -27,6 +27,16 @@ third_shop = {
     "thirdName": ""
 }
 
+# 三方店铺表头
+third_shop_map = {
+    "id": "编号",
+    "thirdShopId": "三方店铺编号",
+    "name": "店铺名称",
+    "shopId": "O2O店铺编号",
+    "platformId": "平台类型",
+    "thirdName": "三方店铺名称"
+}
+
 # 美团参数
 wm_param = {
     "app_id": 0,

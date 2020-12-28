@@ -42,11 +42,11 @@ class MySQLHelper(object):
             if count > 0:
                 result = self.db.cursor.fetchmany(num)
             else:
-                result = False
+                result = []
             return result
         except Exception as e:
             print(e)
-            return False
+            return []
 
     def findOne(self, sql, param=None):
         """
@@ -62,7 +62,7 @@ class MySQLHelper(object):
         if count > 0:
             result = self.db.cursor.fetchone()
         else:
-            result = False
+            result = {}
         return result
 
     def batchInsert(self, sql, listItem):
