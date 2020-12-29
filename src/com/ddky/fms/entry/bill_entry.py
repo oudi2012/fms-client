@@ -29,12 +29,12 @@ third_shop = {
 
 # 三方店铺表头
 third_shop_map = {
-    "id": "编号",
-    "thirdShopId": "三方店铺编号",
-    "name": "店铺名称",
-    "shopId": "O2O店铺编号",
-    "platformId": "平台类型",
-    "thirdName": "三方店铺名称"
+    "id": "编号|normal",
+    "thirdShopId": "三方店铺编号|normal",
+    "name": "店铺名称|normal",
+    "shopId": "O2O店铺编号|normal",
+    "platformId": "平台类型|normal",
+    "thirdName": "三方店铺名称|normal"
 }
 
 # 美团参数
@@ -83,23 +83,23 @@ task_info = {
 
 # 任务信息表头
 task_info_map = {
-    "id": "编号",
-    "channelCode": "渠道编码",
-    "settleTime": "结算时间",
-    "excelTotal": "excel总数",
-    "opTotal": "操作数量",
-    "opState": "操作状态",
-    "rtState": "返回状态",
-    "creator": "创建人",
-    "createDate": "创建日期",
-    "startRead": "读取开始",
-    "endRead": "读取结束",
-    "startFormat": "转化开始",
-    "endFormat": "转化结束",
-    "startCheck": "核对开始",
-    "endCheck": "核对结束",
-    "startLoad": "加载开始",
-    "endLoad": "加载结束"
+    "id": "编号|normal",
+    "channelCode": "渠道编码|normal",
+    "settleTime": "结算时间|normal",
+    "excelTotal": "excel总数|normal",
+    "opTotal": "操作数量|normal",
+    "opState": "操作状态|normal",
+    "rtState": "返回状态|normal",
+    "creator": "创建人|normal",
+    "createDate": "创建日期|normal",
+    "startRead": "读取开始|normal",
+    "endRead": "读取结束|normal",
+    "startFormat": "转化开始|normal",
+    "endFormat": "转化结束|normal",
+    "startCheck": "核对开始|normal",
+    "endCheck": "核对结束|normal",
+    "startLoad": "加载开始|normal",
+    "endLoad": "加载结束|normal"
 }
 
 
@@ -195,19 +195,18 @@ third_bill = {
 
 # 三方账单表头对应字段
 third_bill_map = {
-    "id": "编号",
-    "thirdOrderId": "三方编号",
-    "payType": "支付类型",
-    "status": "对账状态",
-    "type": "类型",
-    "amount": "账单金额",
-    "serviceCharge": "平台服务费",
-    "channelDiscountPay": "渠道优惠",
-    "checkAmount": "结算金额",
-    "receivePayTime": "到账时间",
-    "createdAt": "导入时间",
-    "createdBy": "操作人",
-    "accountDate": "账单日期"
+    "id": "编号|normal",
+    "thirdOrderId": "三方编号|normal",
+    "payType": "支付类型|pageType",
+    "type": "类型|billType",
+    "amount": "账单金额|money",
+    "serviceCharge": "平台服务费|money",
+    "channelDiscountPay": "渠道优惠|money",
+    "checkAmount": "结算金额|money",
+    "receivePayTime": "到账时间|normal",
+    "createdAt": "导入时间|normal",
+    "createdBy": "操作人|normal",
+    "accountDate": "账单日期|normal"
 }
 
 # 美团账单对象类

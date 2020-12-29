@@ -5,11 +5,13 @@ import logging
 
 from PyQt5.QtGui import QStandardItemModel, QStandardItem, QPixmap, QPalette, QBrush
 from PyQt5.QtWidgets import QTableView, QHeaderView, QVBoxLayout, QApplication, QWidget, QLabel, \
-    QHBoxLayout, QPushButton, QLineEdit, QGridLayout
-from PyQt5.QtCore import Qt, pyqtSignal
+    QHBoxLayout, QPushButton, QLineEdit, QGridLayout, QDateTimeEdit, QComboBox
+from PyQt5.QtCore import Qt, pyqtSignal, QDateTime
 
 from src.com.ddky.fms.entry.bill_entry import third_shop
 from src.com.ddky.fms.entry.menu_table_param import param_menu_table
+from src.com.ddky.fms.entry.pay_type_enum import page_type
+from src.com.ddky.fms.entry.value_format import format_value
 from src.com.ddky.fms.jdbc.mysql_dml import querySQLAndWhere, totalSQLAndWhere
 from src.com.ddky.fms.jdbc.mysql_utils import MySQLHelper
 
@@ -24,7 +26,7 @@ menu_height = 30
 # 搜索栏标题的高度
 lb_search_height = 30
 # 搜索栏输入框的高度
-txt_search_height = 30
+txt_search_height = 25
 
 
 # 表格样式
@@ -119,6 +121,14 @@ def searchStyle():
             border-top: 1px solid #95B8E7;
             border-right: 1px solid #95B8E7;
         }
+        QPushButton {
+            border: none;
+            border-radius:8px;
+            background-image:url(images/btn_search.png);
+        }
+        QPushButton:hover {
+            border:2px solid #95B8E7;
+        }
         QLineEdit {
             border: 1px solid #95B8E7;
         }
@@ -156,6 +166,10 @@ class MainContainer(QWidget):
     page_signal = pyqtSignal(list)
     # 当前选中的菜单名称
     crt_menu_name = 'btn_task'
+    # 数据查询条件
+    sql_where = ''
+    # 条件对应的值
+    sql_where_value = []
 
     def __init__(self):
         super(MainContainer, self).__init__()
@@ -268,6 +282,7 @@ class MainContainer(QWidget):
         lb_third_orderId.setAlignment(Qt.AlignRight | Qt.AlignVCenter)
         task_search_layout.addWidget(lb_third_orderId, 0, 0, 1, 1)
         txt_third_orderId = QLineEdit()
+        txt_third_orderId.setObjectName("third_orderId")
         txt_third_orderId.setFixedHeight(txt_search_height)
         txt_third_orderId.setFixedWidth(200)
         task_search_layout.addWidget(txt_third_orderId, 0, 1, 1, 1)
@@ -276,60 +291,77 @@ class MainContainer(QWidget):
         lb_import_date_start.setText("导入时间：")
         lb_import_date_start.setAlignment(Qt.AlignRight | Qt.AlignVCenter)
         task_search_layout.addWidget(lb_import_date_start, 0, 2, 1, 1)
-        txt_import_date_start = QLineEdit()
-        txt_import_date_start.setFixedHeight(txt_search_height)
-        task_search_layout.addWidget(txt_import_date_start, 0, 3, 1, 1)
+        time_import_date_start = QDateTimeEdit(QDateTime.currentDateTime())
+        time_import_date_start.setFixedHeight(txt_search_height)
+        time_import_date_start.setDisplayFormat("yyyy-MM-dd")
+        time_import_date_start.setCalendarPopup(True)
+        time_import_date_start.setObjectName("import_date_start")
+        task_search_layout.addWidget(time_import_date_start, 0, 3, 1, 1)
         # 导入时间 结束时间
         lb_import_date_end = QLabel(task_search_frame)
         lb_import_date_end.setText("到")
         lb_import_date_end.setAlignment(Qt.AlignCenter | Qt.AlignVCenter)
         task_search_layout.addWidget(lb_import_date_end, 0, 4, 1, 1)
-        txt_import_date_end = QLineEdit()
-        txt_import_date_end.setFixedHeight(txt_search_height)
-        task_search_layout.addWidget(txt_import_date_end, 0, 5, 1, 1)
+        time_import_date_end = QDateTimeEdit(QDateTime.currentDateTime())
+        time_import_date_end.setFixedHeight(txt_search_height)
+        time_import_date_end.setDisplayFormat("yyyy-MM-dd")
+        time_import_date_end.setCalendarPopup(True)
+        time_import_date_end.setObjectName("import_date_end")
+        task_search_layout.addWidget(time_import_date_end, 0, 5, 1, 1)
         # 到账时间 开始时间
         lb_receive_date_start = QLabel(task_search_frame)
         lb_receive_date_start.setText("到账时间：")
         lb_receive_date_start.setAlignment(Qt.AlignRight | Qt.AlignVCenter)
         task_search_layout.addWidget(lb_receive_date_start, 0, 6, 1, 1)
-        txt_receive_date_start = QLineEdit()
-        txt_receive_date_start.setFixedHeight(txt_search_height)
-        task_search_layout.addWidget(txt_receive_date_start, 0, 7, 1, 1)
+        time_receive_date_start = QDateTimeEdit(QDateTime.currentDateTime().addDays(3))
+        time_receive_date_start.setFixedHeight(txt_search_height)
+        time_receive_date_start.setDisplayFormat("yyyy-MM-dd")
+        time_receive_date_start.setCalendarPopup(True)
+        time_receive_date_start.setObjectName("receive_date_start")
+        task_search_layout.addWidget(time_receive_date_start, 0, 7, 1, 1)
         # 到账时间 结束时间
         lb_receive_date_end = QLabel(task_search_frame)
         lb_receive_date_end.setText("到")
         lb_receive_date_end.setAlignment(Qt.AlignCenter | Qt.AlignVCenter)
         task_search_layout.addWidget(lb_receive_date_end, 0, 8, 1, 1)
-        txt_receive_date_end = QLineEdit()
-        txt_receive_date_end.setFixedHeight(txt_search_height)
-        task_search_layout.addWidget(txt_receive_date_end, 0, 9, 1, 1)
+        time_receive_date_end = QDateTimeEdit(QDateTime.currentDateTime().addDays(3))
+        time_receive_date_end.setFixedHeight(txt_search_height)
+        time_receive_date_end.setDisplayFormat("yyyy-MM-dd")
+        time_receive_date_end.setCalendarPopup(True)
+        time_receive_date_end.setObjectName("receive_date_end")
+        task_search_layout.addWidget(time_receive_date_end, 0, 9, 1, 1)
         # 支付方式
         lb_pay_type = QLabel(task_search_frame)
         lb_pay_type.setText("支付方式：")
         lb_pay_type.setAlignment(Qt.AlignRight | Qt.AlignVCenter)
         task_search_layout.addWidget(lb_pay_type, 0, 10, 1, 1)
-        txt_pay_type = QLineEdit()
-        txt_pay_type.setFixedHeight(txt_search_height)
-        txt_pay_type.setFixedWidth(100)
-        task_search_layout.addWidget(txt_pay_type, 0, 11, 1, 1)
+        combo_pay_type = QComboBox()
+        combo_pay_type.setObjectName("pay_type")
+        combo_pay_type.setFixedHeight(txt_search_height)
+        combo_pay_type.setFixedWidth(100)
+        combo_pay_type.addItem('请选择', 0)
+        for key, value in page_type.items():
+            combo_pay_type.addItem(value, key)
+        task_search_layout.addWidget(combo_pay_type, 0, 11, 1, 1)
         # 账单类型 收付款
         lb_account_type = QLabel(task_search_frame)
         lb_account_type.setText("账单类型：")
         lb_account_type.setAlignment(Qt.AlignRight | Qt.AlignVCenter)
         task_search_layout.addWidget(lb_account_type, 0, 12, 1, 1)
-        txt_account_type = QLineEdit()
-        txt_account_type.setFixedHeight(txt_search_height)
-        txt_account_type.setFixedWidth(100)
-        task_search_layout.addWidget(txt_account_type, 0, 13, 1, 1)
-        # 对账状态 收付款
-        lb_check_state = QLabel(task_search_frame)
-        lb_check_state.setText("对账状态：")
-        lb_check_state.setAlignment(Qt.AlignRight | Qt.AlignVCenter)
-        task_search_layout.addWidget(lb_check_state, 0, 14, 1, 1)
-        txt_check_state = QLineEdit()
-        txt_check_state.setFixedHeight(txt_search_height)
-        txt_check_state.setFixedWidth(100)
-        task_search_layout.addWidget(txt_check_state, 0, 15, 1, 1)
+        combo_account_type = QComboBox()
+        combo_account_type.setObjectName("account_type")
+        combo_account_type.setFixedHeight(txt_search_height)
+        combo_account_type.setFixedWidth(60)
+        combo_account_type.addItem('请选择', 0)
+        combo_account_type.addItem('收款', 1)
+        combo_account_type.addItem('退款', 2)
+        task_search_layout.addWidget(combo_account_type, 0, 13, 1, 1)
+        btn_search = QPushButton()
+        btn_search.setFixedWidth(30)
+        btn_search.setFixedHeight(lb_search_height)
+        btn_search.setCursor(Qt.PointingHandCursor)
+        btn_search.clicked.connect(self._search_param)
+        task_search_layout.addWidget(btn_search, 0, 14, 1, 4)
         self.right_layer.addWidget(task_search_frame, 1)
 
     # 右侧内容
@@ -408,16 +440,19 @@ class MainContainer(QWidget):
             row_length = len(dataList)
         # 根据数据列创建数据表
         model = QStandardItemModel(row_length, col_length)
-        model.setHorizontalHeaderLabels([title for title in headers.values()])
+        model.setHorizontalHeaderLabels([title.split('|')[0] for title in headers.values()])
         r_index = 0
         for row in dataList:
             c_index = 0
-            for col in headers.keys():
-                item_value = str(row[col])
-                if row[col] is None or len(str(row[col])) <= 0:
+            for key, value in headers.items():
+                arr_val = value.split('|')
+                if key not in row.keys() or row[key] is None:
                     item_value = ''
-                elif item_value[0] == 'b':
+                else:
+                    item_value = str(row[key])
+                if len(item_value) > 0 and item_value[0] == 'b':
                     item_value = item_value[2:-1]
+                item_value = format_value(arr_val[1], item_value)
                 item = QStandardItem(item_value)
                 model.setItem(r_index, c_index, item)
                 c_index = c_index + 1
@@ -426,37 +461,31 @@ class MainContainer(QWidget):
 
     def _home_page(self):
         curtPage = self.findChild(QLabel, "curtPage")
-        print('curtPage = ' + curtPage.text())
         """ 点击首页信号 """
         self.page_signal.emit(["home", curtPage.text()])
 
     def _pre_page(self):
         curtPage = self.findChild(QLabel, "curtPage")
-        print('curtPage = ' + curtPage.text())
         """ 点击上一页信号 """
         self.page_signal.emit(["pre", curtPage.text()])
 
     def _next_page(self):
         curtPage = self.findChild(QLabel, "curtPage")
-        print('curtPage = ' + curtPage.text())
         """ 点击下一页信号 """
         self.page_signal.emit(["next", curtPage.text()])
 
     def _final_page(self):
         curtPage = self.findChild(QLabel, "curtPage")
-        print('curtPage = ' + curtPage.text())
         """ 末页点击信号 """
         self.page_signal.emit(["final", curtPage.text()])
 
     def _confirm_skip(self):
         skipPage = self.findChild(QLineEdit, "skipPage")
-        print('skipPage = ' + skipPage.text())
         """ 跳转页码确定 """
         self.page_signal.emit(["confirm", skipPage.text()])
 
     def showTotalPage(self):
         totalPage = self.findChild(QLabel, "totalPage")
-        print('totalPage = ' + totalPage.text())
         """ 返回当前总页数 """
         return int(totalPage.text()[1:-1])
 
@@ -483,6 +512,49 @@ class MainContainer(QWidget):
         # 改变表格内容
         self.data_list(self.crt_menu_name)
 
+    # 获取搜索参数值
+    def _search_param(self):
+        self.sql_where = ''
+        self.sql_where_value.clear()
+        third_orderId = self.findChild(QLineEdit, 'third_orderId').text()
+        if third_orderId is not None and len(third_orderId) > 0:
+            self.sql_where += ' thirdOrderId = %s '
+            self.sql_where_value.append(third_orderId)
+        import_date_start = self.findChild(QDateTimeEdit, 'import_date_start').date()
+        if import_date_start is not None:
+            import_start = import_date_start.toString("yyyy-MM-dd")
+            self.sql_where += ' and createdAt >= %s '
+            self.sql_where_value.append(import_start + " 00:00:00")
+        import_date_end = self.findChild(QDateTimeEdit, 'import_date_end').date()
+        if import_date_end is not None:
+            import_end = import_date_end.toString("yyyy-MM-dd")
+            self.sql_where += ' and createdAt <= %s '
+            self.sql_where_value.append(import_end + " 23:59:59")
+        receive_date_start = self.findChild(QDateTimeEdit, 'receive_date_start').date()
+        if receive_date_start is not None:
+            receive_start = receive_date_start.toString("yyyy-MM-dd")
+            self.sql_where += ' and receivePayTime >= %s '
+            self.sql_where_value.append(receive_start + " 00:00:00")
+        receive_date_end = self.findChild(QDateTimeEdit, 'receive_date_end').date()
+        if receive_date_end is not None:
+            receive_end = receive_date_end.toString("yyyy-MM-dd")
+            self.sql_where += ' and receivePayTime <= %s '
+            self.sql_where_value.append(receive_end + " 23:59:59")
+        pay_type = self.findChild(QComboBox, 'pay_type').currentData()
+        if pay_type is not None and str(pay_type) != '0':
+            self.sql_where += ' and payType = %s '
+            self.sql_where_value.append(str(pay_type))
+        account_type = self.findChild(QComboBox, 'account_type').currentData()
+        if account_type is not None and str(account_type) != '0':
+            self.sql_where += ' and type = %s '
+            self.sql_where_value.append(str(account_type))
+        # 改变表格内容
+        self.sql_where = self.sql_where.strip()
+        if self.sql_where.startswith('and'):
+            self.sql_where = self.sql_where[3:]
+        self.sql_where = ' where ' + self.sql_where
+        self.data_list(self.crt_menu_name)
+
     # 三方店铺数据
     def data_list(self, btn_name):
         crt_btn = self.findChild(QPushButton, self.crt_menu_name)
@@ -505,16 +577,19 @@ class MainContainer(QWidget):
         # 获取具体数据
         sql_order = " order by id desc"
         select_sql = querySQLAndWhere(str(defaultParam['table_name']),
-                                      ",".join(defaultParam['entry_map'].keys()), '',
+                                      ",".join(defaultParam['entry_map'].keys()), self.sql_where,
                                       sql_order, pageInfo['start'], pageSize)
-        result = sql_helper.queryByParam(select_sql, pageSize)
+        if len(self.sql_where_value) > 0:
+            result = sql_helper.queryByParam(select_sql, pageSize, self.sql_where_value)
+        else:
+            result = sql_helper.queryByParam(select_sql, pageSize)
         sql_helper.dispose()
         if len(result) <= 0:
             result.append(third_shop)
         self.right_data(defaultParam['entry_map'], result)
         btn_name = self.findChild(QPushButton, str(defaultParam['btn_name']))
         btn_name.setStyleSheet("border: none;")
-        # 设置当前选中项
+        # 设置当前选中项l
         self.crt_menu_name = str(defaultParam['btn_name'])
         lb_crumb = self.findChild(QLabel, "lb_crumb")
         # 设置导航面包屑
