@@ -1,4 +1,4 @@
-# coding='utf-8'
+# encoding=utf-8
 
 # 三方 token
 import time
@@ -33,7 +33,7 @@ third_shop_map = {
     "thirdShopId": "三方店铺编号|normal",
     "name": "店铺名称|normal",
     "shopId": "O2O店铺编号|normal",
-    "platformId": "平台类型|normal",
+    "platformId": "平台类型|platType",
     "thirdName": "三方店铺名称|normal"
 }
 

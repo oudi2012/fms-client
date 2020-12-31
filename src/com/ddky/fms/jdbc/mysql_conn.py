@@ -1,4 +1,4 @@
-# coding='uft-8'
+# encoding=utf-8
 
 """
 @功能： 创建数据库连接池
@@ -28,7 +28,7 @@ class MySQLConnPool(object):
                 user=mysql_config.DB_USER,
                 passwd=mysql_config.DB_PASSWD,
                 db=mysql_config.DB_NAME,
-                use_unicode=False,
+                use_unicode=True,
                 charset=mysql_config.DB_CHARSET,
                 cursorclass=DictCursor
             )

@@ -15,6 +15,16 @@ def format_value(name, value):
         return value
 
 
+# 平台类型
+def platType(value):
+    if value is None or len(value) <= 0:
+        return '美团'
+    if int(value) == 30:
+        return '美团'
+    else:
+        return '饿百'
+
+
 # 账单类型
 def billType(value):
     if value is None or len(value) <= 0:

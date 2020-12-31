@@ -11,7 +11,7 @@ from src.com.ddky.fms.jdbc.mysql_dml import insertSQL
 # 获取三方店铺
 def request_third_shops():
     response = requests.post("http://fms.ddky.com/wm_shop_info/query.htm")
-    insertSql = insertSQL("fms_third_shopinfo", **third_shop)
+    insertSql = insertSQL("fms_third_shopinfo", third_shop)
     sqlHelper = MySQLHelper()
     for item in eval(response.text):
         _item = []

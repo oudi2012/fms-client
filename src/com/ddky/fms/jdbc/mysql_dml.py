@@ -1,4 +1,4 @@
-# coding='utf-8'
+# encoding=utf-8
 
 def getValueByType(value):
     if type(value) == 'int':
@@ -44,7 +44,7 @@ def insertSQL(tableName, args):
     sql = "insert into " + tableName
     cols = []
     values = []
-    for item in args:
+    for item in args.keys():
         cols.append(item)
         values.append("%s")
     sql = sql + " (" + ",".join(cols) + ") values (" + ",".join(values) + ")"
