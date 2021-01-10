@@ -20,8 +20,9 @@ def totalSQLAndWhere(tableName, where):
 
 # 生成 select sql
 def querySQLAndWhere(tableName, cols, where, order, start, offset):
-    sql = "select  " + cols + " from " + tableName + " " + where + " " + order \
-          + " limit " + str(start) + "," + str(offset)
+    sql = "select  " + cols + " from " + tableName + " " + where + " " + order
+    if start is not None and offset is not None:
+        sql += " limit " + str(start) + "," + str(offset)
     print(sql)
     return sql
 

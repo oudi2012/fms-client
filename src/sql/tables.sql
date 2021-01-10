@@ -136,3 +136,13 @@ create table fms_third_bill
 )ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='三方账单';
 
 alter table fms_third_bill add index idx_type_thdOrdId(type, thirdOrderId);
+
+drop table if exists fms_excel_path;
+create table fms_excel_path
+(
+  id          int not null AUTO_INCREMENT,
+  name        varchar(200),
+  path        varchar(300),
+  createDate    int comment '创建时间',
+  PRIMARY KEY (id)
+)ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='Excel文件路径';

@@ -1,6 +1,4 @@
 # encoding=utf-8
-# 启动页面
-
 import sys
 import os
 import logging

@@ -14,6 +14,8 @@ from src.com.ddky.fms.entry.pay_type_enum import page_type
 from src.com.ddky.fms.entry.value_format import format_value
 from src.com.ddky.fms.jdbc.mysql_dml import querySQLAndWhere, totalSQLAndWhere
 from src.com.ddky.fms.jdbc.mysql_utils import MySQLHelper
+from src.com.ddky.fms.view.model.left_menu import LeftMenu
+from src.com.ddky.fms.view.model.top_widget import TopWidget
 
 logging.basicConfig(level=logging.INFO, filename='fms_log.log', datefmt='%Y/%m/%d %H:%M:%S',
                     format='%(asctime)s - %(levelname)s - %(message)s')
@@ -198,9 +200,10 @@ class MainContainer(QWidget):
         self.right_layer = QVBoxLayout()
         self.right_layer.setContentsMargins(0, 0, 0, 0)
         self.right_layer.setSpacing(0)
-        self.top_widget()
-        self.left_frame = QWidget()
-        self.left_widget()
+        top_widget = TopWidget()
+        self.layout.addWidget(top_widget, 1)
+        self.left_frame = LeftMenu()
+        self.center_layout.addWidget(self.left_frame, 1)
         # 默认数据
         self.crumb_frame = QWidget()
         self.search_frame = QWidget()
@@ -209,64 +212,33 @@ class MainContainer(QWidget):
         self.setLayout(self.layout)
         self.data_list()
 
-    # 顶部控件
-    def top_widget(self):
-        top_frame = QWidget()
-        top_frame.setAutoFillBackground(True)
-        top_frame.palette = QPalette()
-        top_frame.palette.setBrush(QPalette.Background, QBrush(QPixmap("images/top_banner_bg.png")))
-        top_frame.setPalette(top_frame.palette)
-        top_frame.setFixedHeight(64)
-        self.layout.addWidget(top_frame, 1)
-
-    # 左侧菜单
-    def left_widget(self):
-        left_layout = QVBoxLayout()
-        left_layout.setContentsMargins(0, 0, 0, 0)
-        left_layout.setSpacing(0)
-        self.left_frame.setStyleSheet("border: 1px solid #95B8E7; background-color: #FFFFFF;")
-        # 导航菜单
-        lb_title = QLabel(self.left_frame)
-        lb_title.setText("导航")
-        lb_title.setObjectName("firstMenu")
-        lb_title.setAlignment(Qt.AlignLeft | Qt.AlignVCenter)
-        lb_title.setStyleSheet(leftStyle())
-        lb_title.setFixedHeight(menu_height + 1)
-        left_layout.addWidget(lb_title)
-        # 任务菜单
-        btn_task = QPushButton(self.left_frame)
-        btn_task.setText("任务列表")
-        btn_task.setObjectName('btn_task')
-        btn_task.setAutoFillBackground(True)
-        btn_task.setStyleSheet("border: none;")
-        btn_task.setFixedHeight(menu_height)
-        btn_task.clicked.connect(lambda: self.btn_search_widget('btn_task'))
-        btn_task.setCursor(Qt.PointingHandCursor)
-        left_layout.addWidget(btn_task)
-        # 三方账单
-        btn_third_bill = QPushButton(self.left_frame)
-        btn_third_bill.setText("三方账单")
-        btn_third_bill.setObjectName('btn_third_bill')
-        btn_third_bill.setAutoFillBackground(True)
-        btn_third_bill.setStyleSheet(leftStyle())
-        btn_third_bill.setFixedHeight(menu_height)
-        btn_third_bill.setCursor(Qt.PointingHandCursor)
-        btn_third_bill.clicked.connect(lambda: self.btn_search_widget('btn_third_bill'))
-        left_layout.addWidget(btn_third_bill)
-        # 三方店铺
-        btn_third_shop = QPushButton(self.left_frame)
-        btn_third_shop.setText("三方店铺")
-        btn_third_shop.setObjectName("btn_third_shop")
-        btn_third_shop.setAutoFillBackground(True)
-        btn_third_shop.setStyleSheet(leftStyle())
-        btn_third_shop.setFixedHeight(menu_height)
-        btn_third_shop.setCursor(Qt.PointingHandCursor)
-        btn_third_shop.clicked.connect(lambda: self.btn_search_widget('btn_third_shop'))
-        left_layout.addWidget(btn_third_shop)
+    # 数据文件路径配置
+    def path_widget(self):
+        path_frame = QWidget()
+        path_layout = QVBoxLayout()
+        path_frame.setLayout(path_layout)
+        lb_crumb = self.crumb_frame.findChild(QLabel, "lb_crumb")
+        lb_crumb.setText("控制台 -> 文件路径设置")
+        pathItem_layout = QHBoxLayout()
+        lb_wm = QLabel(path_frame)
+        lb_wm.setObjectName("lb_wm")
+        lb_wm.setText("美团Excel文件路径：")
+        pathItem_layout.addWidget(lb_wm)
+        txt_wm = QLineEdit()
+        txt_wm.setObjectName("txt_wm")
+        txt_wm.setFixedHeight(txt_search_height)
+        txt_wm.setFixedWidth(200)
+        pathItem_layout.addWidget(txt_wm)
         # 添加扩展
-        left_layout.addStretch()
-        self.left_frame.setLayout(left_layout)
-        self.center_layout.addWidget(self.left_frame, 1)
+        pathItem_layout.addStretch()
+        path_layout.addLayout(pathItem_layout)
+        # 添加扩展
+        path_layout.addStretch()
+        self.right_layer.insertWidget(2, path_frame, 8)
+        # 删除表格
+        self.right_layer.itemAt(3).widget().setVisible(False)
+        # 删除分页
+        self.right_layer.itemAt(4).widget().setVisible(False)
 
     # 面包屑导航
     def crumb_widget(self):
@@ -298,8 +270,8 @@ class MainContainer(QWidget):
         elif btn_name == 'btn_third_bill':
             self.thirdBill_search_widget()
         # 设置选中按钮的样式
-        btn_name = self.left_frame.findChild(QPushButton, btn_name)
-        btn_name.setStyleSheet("border: none;")
+        # btn_name = self.left_frame.findChild(QPushButton, btn_name)
+        # btn_name.setStyleSheet("border: none;")
         defaultParam = param_menu_table[self.crt_menu_name]
         # 设置当前选中项l
         self.crt_menu_name = str(defaultParam['btn_name'])

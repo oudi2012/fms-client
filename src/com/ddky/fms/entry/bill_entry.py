@@ -249,3 +249,20 @@ wm_bill = {
     "product_preferences": 0,
     "not_product_preferences": 0
 }
+
+
+# 文件路径
+excel_path = {
+    "id": 0,
+    "name": "",
+    "path": "",
+    "createDate": 0
+}
+
+# 文件路径
+excel_path_map = {
+    "id": "编号|normal",
+    "name": "名称|normal",
+    "path": "路径|normal",
+    "createDate": "创建日期|normal"
+}
