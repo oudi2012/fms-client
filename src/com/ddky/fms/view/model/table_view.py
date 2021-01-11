@@ -74,7 +74,7 @@ def page_info(pageIndex, pageSize, totalCount):
 class TableViewWidget(QFrame):
     # search_signal 搜索信号
     # page_signal 分页信号
-    def __init__(self, crt_menu_name):
+    def __init__(self, crt_menu_name, search_signal):
         super(TableViewWidget, self).__init__()
         self.setStyleSheet(tableStyle())
         table_layout = QHBoxLayout()
@@ -92,6 +92,7 @@ class TableViewWidget(QFrame):
         self.setLayout(table_layout)
         defaultParam = param_menu_table[self.crt_menu_name]
         self.fill_table(defaultParam['entry_map'], [defaultParam['default_value']])
+        search_signal.connect(self.loadBySignal)
 
     # 右侧内容
     def fill_table(self, headers, dataList):
@@ -126,6 +127,10 @@ class TableViewWidget(QFrame):
             r_index = r_index + 1
         self.tableView.setModel(model)
 
+    # loadBySignal
+    def loadBySignal(self, signal):
+        self.load_data(signal['search_param'], int(signal['pageIndex']), int(signal['pageSize']))
+
     # 三方店铺数据
     def load_data(self, search_param, pageIndex, pageSize):
         # 根据按钮名称获取默认参数
@@ -152,3 +157,4 @@ class TableViewWidget(QFrame):
         if len(result) <= 0:
             result.append(defaultParam['default_value'])
         self.fill_table(defaultParam['entry_map'], result)
+        return pageInfo

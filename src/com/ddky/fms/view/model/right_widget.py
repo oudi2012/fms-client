@@ -2,7 +2,10 @@
 
 import logging
 
+from PyQt5.QtCore import pyqtSignal
 from PyQt5.QtWidgets import QVBoxLayout, QFrame
+
+from src.com.ddky.fms.entry.bill_config import PAGE_SIZE
 from src.com.ddky.fms.view.model.crumb_widget import CrumbWidget
 from src.com.ddky.fms.view.model.page_view import PageViewWidget
 from src.com.ddky.fms.view.model.path_setting import PathWidget
@@ -33,12 +36,18 @@ def rightStyle():
 
 # 右侧布局
 class RightWidget(QFrame):
+    # 搜索信号
+    search_signal = pyqtSignal(dict)
+    # page_signal 分页信号
+    page_signal = pyqtSignal(list)
 
     def __init__(self, menu_param, menu_signal):
         super(RightWidget, self).__init__()
         self.setObjectName("right_widget")
         self.right_layer = QVBoxLayout()
+        self.search_sql = {'sql_where': '', 'sql_where_value': ''}
         menu_signal.connect(self.reload)
+        self.page_signal.connect(self.pageReload)
         self.setLayout(self.right_layer)
         self.setStyleSheet(rightStyle())
         self.loadWidget(menu_param)
@@ -58,24 +67,32 @@ class RightWidget(QFrame):
         # 创建搜索框
         search_widget = None
         if menu_param['name'] == 'btn_third_shop':
-            search_widget = ThirdShopSearchWidget(menu_param['name'])
+            search_widget = ThirdShopSearchWidget(menu_param['name'], self.search_signal)
             self.right_layer.addWidget(search_widget, 1)
         elif menu_param['name'] == 'btn_excel_path':
             table_widget = PathWidget()
             self.right_layer.addWidget(table_widget, 7)
             return
         elif menu_param['name'] == 'btn_third_bill':
-            search_widget = ThirdBillSearchWidget(menu_param['name'])
+            search_widget = ThirdBillSearchWidget(menu_param['name'], self.search_signal)
             self.right_layer.addWidget(search_widget, 1)
         # 创建数据表
-        table_widget = TableViewWidget(menu_param['name'])
-        self.right_layer.addWidget(table_widget, 7)
+        self.table_widget = TableViewWidget(menu_param['name'], self.search_signal)
+        self.right_layer.addWidget(self.table_widget, 7)
         # 创建分页
-        page_widget = PageViewWidget()
-        self.right_layer.addWidget(page_widget, 1)
+        self.page_widget = PageViewWidget(self.page_signal)
+        self.right_layer.addWidget(self.page_widget, 1)
         if search_widget is None:
-            table_widget.load_data({'sql_where': '', 'sql_where_value': ''}, 1, 30)
+            pageInfo = self.table_widget.load_data({'sql_where': '', 'sql_where_value': ''}, 1, PAGE_SIZE)
         else:
-            table_widget.load_data(search_widget.search_sql, 1, 30)
+            self.search_sql = search_widget.search_sql
+            pageInfo = self.table_widget.load_data(self.search_sql, 1, PAGE_SIZE)
+        self.page_widget.curtPage.setText(str(pageInfo['pageIndex']))
+        self.page_widget.totalPage.setText('共' + str(pageInfo['pages']) + '页')
+        self.page_widget.pageSize.setText('每页显示' + str(PAGE_SIZE) + '条')
 
-
+    def pageReload(self, page_signal):
+        pageInfo = self.table_widget.load_data(self.search_sql, int(page_signal[0]), int(page_signal[1]))
+        self.page_widget.curtPage.setText(str(pageInfo['pageIndex']))
+        self.page_widget.totalPage.setText('共' + str(pageInfo['pages']) + '页')
+        self.page_widget.pageSize.setText('每页显示' + str(PAGE_SIZE) + '条')

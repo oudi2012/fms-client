@@ -3,7 +3,9 @@
 import logging
 
 from PyQt5.QtWidgets import QGridLayout, QLabel, QLineEdit, QPushButton, QFrame
-from PyQt5.QtCore import Qt, pyqtSignal
+from PyQt5.QtCore import Qt
+
+from src.com.ddky.fms.entry.bill_config import PAGE_SIZE
 
 logging.basicConfig(level=logging.INFO, filename='fms_log.log', datefmt='%Y/%m/%d %H:%M:%S',
                     format='%(asctime)s - %(levelname)s - %(message)s')
@@ -53,11 +55,11 @@ def searchStyle():
 
 # 三方搜索框布局
 class ThirdShopSearchWidget(QFrame):
-    # 搜索信号
-    search_signal = pyqtSignal(dict)
     search_sql = {}
+    sql_where = ''
+    sql_where_value = []
 
-    def __init__(self, crt_menu_name):
+    def __init__(self, crt_menu_name, search_signal):
         super(ThirdShopSearchWidget, self).__init__()
         self.search_sql = {'sql_where': '', 'sql_where_value': ''}
         self.setStyleSheet(searchStyle())
@@ -67,10 +69,10 @@ class ThirdShopSearchWidget(QFrame):
         self.txt_shop_id = QLineEdit()
         self.crt_menu_name = crt_menu_name
         self.setFixedHeight(50)
-        self.load_search()
+        self.load_search(search_signal)
 
     # 三方店铺搜索
-    def load_search(self):
+    def load_search(self, search_signal):
         # 横向间距
         self.task_search_layout.setHorizontalSpacing(5)
         # 纵向间距
@@ -92,32 +94,34 @@ class ThirdShopSearchWidget(QFrame):
         self.task_search_layout.addWidget(lb_shop_id, 0, 2, 1, 1)
         self.txt_shop_id.setObjectName("shop_id")
         self.txt_shop_id.setFixedHeight(txt_search_height)
-        self. txt_shop_id.setFixedWidth(200)
+        self.txt_shop_id.setFixedWidth(200)
         self.task_search_layout.addWidget(self.txt_shop_id, 0, 3, 1, 1)
         btn_search = QPushButton()
         btn_search.setFixedWidth(menu_height)
         btn_search.setFixedHeight(lb_search_height)
         btn_search.setCursor(Qt.PointingHandCursor)
-        btn_search.clicked.connect(self._search_param)
+        btn_search.clicked.connect(lambda: self.search_param(search_signal))
         self.task_search_layout.addWidget(btn_search, 0, 4, 1, 1)
         sync_data = QPushButton()
         sync_data.setObjectName("sync_data")
         sync_data.setFixedWidth(menu_height)
         sync_data.setFixedHeight(lb_search_height)
         sync_data.setCursor(Qt.PointingHandCursor)
-        sync_data.clicked.connect(self._search_param)
+        sync_data.clicked.connect(lambda: self.search_param(search_signal))
         self.task_search_layout.addWidget(sync_data, 0, 5, 1, 4)
         self.task_search_layout.setContentsMargins(1, 1, 0, 0)
         self.setLayout(self.task_search_layout)
 
     # 三方店铺
-    def _search_param(self):
-        shop_name = self.shop_name.text()
+    def search_param(self, search_signal):
+        self.sql_where = ''
+        self.sql_where_value.clear()
+        shop_name = self.txt_shop_name.text()
         if shop_name is not None and len(shop_name) > 0:
-            self.sql_where += " (name like concat('%', %s, '%') or thirdName like concat('%', %s, '%') ) "
+            self.sql_where += " (name like concat('%%', %s, '%%') or thirdName like concat('%%', %s, '%%') ) "
             self.sql_where_value.append(shop_name)
             self.sql_where_value.append(shop_name)
-        shop_id = self.shop_id.text()
+        shop_id = self.txt_shop_id.text()
         if shop_id is not None and len(shop_id) > 0:
             self.sql_where += " and (thirdShopId=%s or platformId=%s) "
             self.sql_where_value.append(shop_id)
@@ -127,4 +131,5 @@ class ThirdShopSearchWidget(QFrame):
         if self.sql_where.startswith('and'):
             self.sql_where = self.sql_where[3:]
         self.sql_where = ' where ' + self.sql_where
-        self.search_sql = {'sql_where': self.sql_where, 'sql_where_value': self.sql_where_value}
+        self.search_sql = {'sql_where': self.sql_where, 'sql_where_value': tuple(self.sql_where_value)}
+        search_signal.emit({'search_param': self.search_sql, 'pageIndex': 1, 'pageSize': PAGE_SIZE})

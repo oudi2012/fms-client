@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
 
-import logging
-
-from PyQt5.QtCore import pyqtSignal
 from PyQt5.QtWidgets import QWidget, QLabel, QLineEdit, QPushButton, QHBoxLayout
 
 
 # 分页样式
+from src.com.ddky.fms.entry.bill_config import PAGE_SIZE
+
+
 def pageStyle():
     style_sheet = """
         QPushButton {
@@ -24,25 +24,22 @@ def pageStyle():
 
 # 表格数据显示和分页
 class PageViewWidget(QWidget):
-    # page_signal 分页信号
-    page_signal = pyqtSignal(list)
 
-    def __init__(self):
+    def __init__(self, page_signal):
         super(PageViewWidget, self).__init__()
+        self.pageSize = QLabel('每页显示0条')
         self.totalPage = QLabel()
         self.skipPage = QLineEdit()
         self.curtPage = QLabel('1')
-        self.page_signal.connect(self.pageController)
         self.setStyleSheet(pageStyle())
         self.setFixedHeight(40)
-        self.page_widget()
+        self.page_widget(page_signal)
 
     # 分页控件
-    def page_widget(self):
+    def page_widget(self, page_signal):
         """ 自定义页码控制器 """
         self.skipPage.setObjectName("skipPage")
-        pageSize = QLabel('每页显示0条')
-        pageSize.setObjectName("pageSize")
+        self.pageSize.setObjectName("pageSize")
         self.curtPage.setObjectName("curtPage")
         homePage = QPushButton("首页")
         prePage = QPushButton("< 上一页")
@@ -53,13 +50,13 @@ class PageViewWidget(QWidget):
         skip_label_pre = QLabel("跳到")
         skip_label_page = QLabel("页")
         confirmSkip = QPushButton("确定")
-        homePage.clicked.connect(self._home_page)
-        prePage.clicked.connect(self._pre_page)
-        nextPage.clicked.connect(self._next_page)
-        finalPage.clicked.connect(self._final_page)
-        confirmSkip.clicked.connect(self._confirm_skip)
+        homePage.clicked.connect(lambda: self._home_page(page_signal))
+        prePage.clicked.connect(lambda: self._pre_page(page_signal))
+        nextPage.clicked.connect(lambda: self._next_page(page_signal))
+        finalPage.clicked.connect(lambda: self._final_page(page_signal))
+        confirmSkip.clicked.connect(lambda: self._confirm_skip(page_signal))
         page_layout = QHBoxLayout()
-        page_layout.addWidget(pageSize)
+        page_layout.addWidget(self.pageSize)
         page_layout.addWidget(homePage)
         page_layout.addWidget(prePage)
         page_layout.addWidget(self.curtPage)
@@ -73,46 +70,45 @@ class PageViewWidget(QWidget):
         page_layout.addStretch(1)
         self.setLayout(page_layout)
 
-    def _home_page(self):
+    def _home_page(self, page_signal):
         """ 点击首页信号 """
-        self.page_signal.emit(["home", self.curtPage.text()])
+        self.curtPage.setText(str(1))
+        page_signal.emit([1, PAGE_SIZE])
 
-    def _pre_page(self):
+    def _pre_page(self, page_signal):
         """ 点击上一页信号 """
-        self.page_signal.emit(["pre", self.curtPage.text()])
+        crt = int(self.curtPage.text())
+        if 1 == crt:
+            return
+        self.curtPage.setText(str(crt - 1))
+        page_signal.emit([crt - 1, PAGE_SIZE])
 
-    def _next_page(self):
+    def _next_page(self, page_signal):
         """ 点击下一页信号 """
-        self.page_signal.emit(["next", self.curtPage.text()])
+        total_page = self.showTotalPage()
+        crt = int(self.curtPage.text())
+        if total_page == crt:
+            return
+        self.curtPage.setText(str(crt + 1))
+        page_signal.emit([crt + 1, PAGE_SIZE])
 
-    def _final_page(self):
+    def _final_page(self, page_signal):
         """ 末页点击信号 """
-        self.page_signal.emit(["final", self.curtPage.text()])
+        total_page = self.showTotalPage()
+        self.curtPage.setText(str(total_page))
+        page_signal.emit([total_page, PAGE_SIZE])
 
-    def _confirm_skip(self):
+    def _confirm_skip(self, page_signal):
         """ 跳转页码确定 """
-        self.page_signal.emit(["confirm", self.skipPage.text()])
+        total_page = self.showTotalPage()
+        skip = self.skipPage.text()
+        if skip is None or skip == '' or len(skip) <= 0:
+            return
+        if total_page < int(skip) or int(skip) < 0:
+            return
+        self.curtPage.setText(skip)
+        page_signal.emit([int(skip), PAGE_SIZE])
 
     def showTotalPage(self):
         """ 返回当前总页数 """
         return int(self.totalPage.text()[1:-1])
-
-    # 分页跳转
-    def pageController(self, signal):
-        total_page = self.showTotalPage()
-        if "home" == signal[0]:
-            self.curtPage.setText("1")
-        elif "pre" == signal[0]:
-            if 1 == int(signal[1]):
-                return
-            self.curtPage.setText(str(int(signal[1]) - 1))
-        elif "next" == signal[0]:
-            if total_page == int(signal[1]):
-                return
-            self.curtPage.setText(str(int(signal[1]) + 1))
-        elif "final" == signal[0]:
-            self.curtPage.setText(str(total_page))
-        elif "confirm" == signal[0]:
-            if total_page < int(signal[1]) or int(signal[1]) < 0:
-                return
-            self.curtPage.setText(signal[1])

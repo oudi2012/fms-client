@@ -5,6 +5,7 @@ import logging
 from PyQt5.QtWidgets import QGridLayout, QLabel, QLineEdit, QPushButton, QFrame, QComboBox, QDateTimeEdit
 from PyQt5.QtCore import Qt, QDateTime, pyqtSignal
 
+from src.com.ddky.fms.entry.bill_config import PAGE_SIZE
 from src.com.ddky.fms.entry.pay_type_enum import page_type
 
 logging.basicConfig(level=logging.INFO, filename='fms_log.log', datefmt='%Y/%m/%d %H:%M:%S',
@@ -55,11 +56,11 @@ def searchStyle():
 
 # 三方搜索框布局
 class ThirdBillSearchWidget(QFrame):
-    # 搜索信号
-    search_signal = pyqtSignal(dict)
     search_sql = {}
+    sql_where = ''
+    sql_where_value = []
 
-    def __init__(self, crt_menu_name):
+    def __init__(self, crt_menu_name, search_signal):
         super(ThirdBillSearchWidget, self).__init__()
         self.time_import_date_start = QDateTimeEdit(QDateTime.currentDateTime())
         self.txt_third_orderId = QLineEdit()
@@ -79,10 +80,10 @@ class ThirdBillSearchWidget(QFrame):
         self.setLayout(self.search_layout)
         self.crt_menu_name = crt_menu_name
         self.setFixedHeight(50)
-        self.load_search()
+        self.load_search(search_signal)
 
     # 三方店铺搜索
-    def load_search(self):
+    def load_search(self, search_signal):
         lb_third_orderId = QLabel()
         lb_third_orderId.setText("三方单号：")
         lb_third_orderId.setFixedHeight(lb_search_height)
@@ -160,11 +161,13 @@ class ThirdBillSearchWidget(QFrame):
         btn_search.setFixedWidth(menu_height)
         btn_search.setFixedHeight(lb_search_height)
         btn_search.setCursor(Qt.PointingHandCursor)
-        btn_search.clicked.connect(self._search_param)
+        btn_search.clicked.connect(lambda: self.search_param(search_signal))
         self.search_layout.addWidget(btn_search, 0, 14, 1, 4)
 
     # 三方店铺
-    def _search_param(self):
+    def search_param(self, search_signal):
+        self.sql_where = ''
+        self.sql_where_value.clear()
         third_orderId = self.findChild(QLineEdit, 'third_orderId').text()
         if third_orderId is not None and len(third_orderId) > 0:
             self.sql_where += ' thirdOrderId = %s '
@@ -202,4 +205,5 @@ class ThirdBillSearchWidget(QFrame):
         if self.sql_where.startswith('and'):
             self.sql_where = self.sql_where[3:]
         self.sql_where = ' where ' + self.sql_where
-        self.search_sql = {'sql_where': self.sql_where, 'sql_where_value': self.sql_where_value}
+        self.search_sql = {'sql_where': self.sql_where, 'sql_where_value': tuple(self.sql_where_value)}
+        search_signal.emit({'search_param': self.search_sql, 'pageIndex': 1, 'pageSize': PAGE_SIZE})
